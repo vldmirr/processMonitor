@@ -4,6 +4,7 @@
 LOG_FILE="/var/log/monitoring.log"
 URL="https://httpbin.dev/uuid"
 NAME="test"
+PID="/var/run/${NAME}.pid" 
 STATE_FILE="/var/run/process_monitor.state"
 CURRENT_STATE=""
 
@@ -14,12 +15,41 @@ log() {
 
 #проверки процесса
 check() {
+    #прошлый и текущий пид
+    local currPID
+    local prevPID
+
+    currPID=$(pgrep -f "$NAME" | head -1)
+
+    #информируем о запуске или остановке контейнера
     if pgrep -x "$NAME" > /dev/null; then
+        prevPID=$(cat "$PID" 2>/dev/null) 
         log "INFO: Process $NAME is running"
         echo "running"
     else
+        prevPID=""
         log "INFO: Process $NAME is NOT running"
         echo "stopped"
+    fi
+
+    #Если процесс запущен
+    if [ -n "$currPID" ]; then 
+        # Проверка на перезапуск
+        if [ -n "$prevPID" ] && [ "$currPID" != "$prevPID" ]; then  # Fixed: added spaces
+            log "INFO: Process $NAME was restarted. Old PID: $prevPID, New PID: $currPID"
+        fi
+
+        echo "$currPID" > "$PID"
+
+        #Отправляем запрос на сервер
+        if sendReq; then
+            log "INFO: Process $NAME (PID: $currPID) is running and monitoring check passed"
+        fi
+    # Удаление процесса если тот не запущен
+    # else 
+    #     if [ -f "$PID" ]; then  # Fixed: added spaces
+    #         rm -f "$PID"
+    #     fi
     fi
 }
 
@@ -36,7 +66,7 @@ sendReq() {
     if [ "$response_code" -eq 200 ] || [ "$response_code" -eq 201 ]; then
         log "$response"
         log "HTTP code: $response_code"
-        return 1
+        return 0 
     else
         log "$response"
         log "ERROR: Monitoring server unavailable. HTTP code: $response_code"
@@ -58,7 +88,7 @@ main() {
     # Если процесс запущен отправляем запрос 
     if [ "$CURRENT_STATE" = "running" ]; then
        
-        if ! sendReq; then    
+        if ! sendReq; then
             true
         fi
         
