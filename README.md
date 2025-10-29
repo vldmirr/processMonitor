@@ -56,7 +56,7 @@ sudo systemctl start process-monitor.service
 
 ```bash
 #запуск
-sudo cp exampes/test /usr/local/bin/test
+sudo cp examples/test /usr/local/bin/test
 sudo chmod +x /usr/local/bin/test
 sudo /usr/local/bin/test &
 
