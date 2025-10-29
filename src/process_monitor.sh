@@ -1,102 +1,55 @@
 #!/bin/bash
 
-# Скрипт мониторинга процесса
-# Конфигурация
 LOG_FILE="/var/log/monitoring.log"
-URL="${URL:-https://test.com/monitoring/test/api}"
-NAME="${NAME:-test}"
+URL="https://test.com/monitoring/test/api"
+PROCESS_NAME="test"
 STATE_FILE="/var/run/process_monitor.state"
-CURRENT_STATE=""
 
-#проверки процесса
-check() {
-    if pgrep -x "$NAME" > /dev/null; then
-        echo "running"
-    else
-        echo "stopped"
-    fi
-}
-
-
-#логирования
+# Функция для логирования
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
+    logger "ProcessMonitor: $1"
 }
 
+log "DEBUG: Script started"
 
-# отправки запроса
-sendReq() {
-    local responseCode
-    local curlOutput
-    
-    # Отправляем HTTPS запрос с таймаутом
-    curlOutput=$(curl -s -o /dev/null -w "%{http_code}" \
-        --max-time 10 \
-        --connect-timeout 5 \
-        -H "User-Agent: ProcessMonitor/1.0" \
-        "$URL" 2>&1)
-    
-    responseCode="$?"
-    
-    # Обрабатываем разные коды ошибок curl
-    case "$responseCode" in
-        0)
-            if [ "$curlOutput" -eq 200 ] || [ "$curlOutput" -eq 201 ]; then
-                log "INFO: Monitoring request sent successfully"
-                return 0
-            else
-                log "ERROR: Monitoring server returned HTTP $curlOutput"
-                return 1
-            fi
-            ;;
-        6)
-            log "ERROR: Could not resolve hostname: $URL"
-            return 1
-            ;;
-        7)
-            log "ERROR: Failed to connect to monitoring server"
-            return 1
-            ;;
-        28)
-            log "ERROR: Connection timeout to monitoring server"
-            return 1
-            ;;
-        35)
-            log "ERROR: SSL connection error to monitoring server"
-            return 1
-            ;;
-        *)
-            log "ERROR: Monitoring server unavailable (curl error: $responseCode)"
-            return 1
-            ;;
-    esac
-}
+# Проверяем существование STATE_FILE
+if [ ! -f "$STATE_FILE" ]; then
+    log "DEBUG: State file created"
+    echo "unknown" > "$STATE_FILE"
+fi
 
-# Основная логика
-main() {
-    CURRENT_STATE=$(check)
+# Проверяем процесс
+if pgrep -x "$PROCESS_NAME" > /dev/null; then
+    log "DEBUG: Process $PROCESS_NAME is running"
+    CURRENT_STATE="running"
+else
+    log "DEBUG: Process $PROCESS_NAME is NOT running"
+    CURRENT_STATE="stopped"
+fi
+
+# Читаем предыдущее состояние
+PREVIOUS_STATE=$(cat "$STATE_FILE")
+log "DEBUG: Previous state: $PREVIOUS_STATE, Current state: $CURRENT_STATE"
+
+# Если процесс запущен
+if [ "$CURRENT_STATE" = "running" ]; then
+    log "DEBUG: Sending monitoring request"
     
-    # Читаем предыдущее состояние
-    if [ -f "$STATE_FILE" ]; then
-        PREVIOUS_STATE=$(cat "$STATE_FILE")
+    # Пробуем отправить запрос
+    if curl -s -o /dev/null -w "%{http_code}" -H "User-Agent: ProcessMonitor/1.0" "$URL" > /dev/null 2>&1; then
+        log "DEBUG: Monitoring request successful"
     else
-        PREVIOUS_STATE="unknown"
+        log "ERROR: Monitoring server unavailable or curl failed"
     fi
     
-    # Если процесс запущен
-    if [ "$CURRENT_STATE" = "running" ]; then
-        # Отправляем запрос к серверу мониторинга
-        sendReq
-        
-        # Проверяем, был ли процесс перезапущен
-        if [ "$PREVIOUS_STATE" = "stopped" ] && [ "$CURRENT_STATE" = "running" ]; then
-            log "INFO: Process '$NAME' was restarted"
-        fi
+    # Проверяем перезапуск
+    if [ "$PREVIOUS_STATE" = "stopped" ] && [ "$CURRENT_STATE" = "running" ]; then
+        log "INFO: Process '$PROCESS_NAME' was restarted"
     fi
-    
-    # Сохраняем текущее состояние
-    echo "$CURRENT_STATE" > "$STATE_FILE"
-}
+fi
 
-# Запуск основной функции
-main "$@"
+# Сохраняем состояние
+echo "$CURRENT_STATE" > "$STATE_FILE"
+log "DEBUG: Script finished"
+                             

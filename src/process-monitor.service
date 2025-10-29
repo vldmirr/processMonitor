@@ -1,13 +1,11 @@
 [Unit]
-Description=Process Monitor Service
+Description=Process Monitor for test service
 After=network.target
 Wants=network.target
 
 [Service]
 Type=oneshot
 User=root
-Environment="NAME=test"
-Environment="URL=https://test.com/monitoring/test/api"
 ExecStart=/usr/local/bin/process_monitor.sh
 StandardOutput=journal
 StandardError=journal

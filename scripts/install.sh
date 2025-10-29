@@ -43,17 +43,3 @@ systemctl daemon-reload
 echo "Enabling and starting timer..."
 systemctl enable process-monitor.timer
 systemctl start process-monitor.timer
-
-echo ""
-echo "=== Installation completed successfully! ==="
-echo ""
-echo "Usage:"
-echo "  Check status: systemctl status process-monitor.timer"
-echo "  View logs: tail -f /var/log/monitoring.log"
-echo "  Run: systemctl start process-monitor.service"
-echo ""
-echo "Config:"
-echo "  Edit /etc/systemd/system/process-monitor.service to change:"
-echo "  - PROCESS_NAME environment variable"
-echo "  - MONITORING_URL environment variable"
-echo ""

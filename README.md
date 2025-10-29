@@ -52,22 +52,23 @@ sudo systemctl start process-monitor.timer
 sudo systemctl start process-monitor.service
 ```
 
-### Запуск тестового процесса
+### Взаимодействие с тестовым процессом
 
 ```bash
 sudo examples/process.sh start
+sudo examples/process.sh restart
+sudo examples/process.sh stop
 ```
 
 ### Проверка статуса:
 
 ```bash
-# Статус таймера
-systemctl status process-monitor.timer
+sudo systemctl status process-monitor.timer
 
-# История запусков
-journalctl -u process-monitor.service
+sudo journalctl -u process-monitor.service -f
 
-# Просмотр логов
+systemctl list-timers
+
 tail -f /var/log/monitoring.log
 ```
 
