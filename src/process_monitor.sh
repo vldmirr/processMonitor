@@ -15,8 +15,10 @@ log() {
 #проверки процесса
 check() {
     if pgrep -x "$NAME" > /dev/null; then
+        log "INFO: Process $NAME is running"
         echo "running"
     else
+        log "INFO: Process $NAME is NOT running"
         echo "stopped"
     fi
 }
