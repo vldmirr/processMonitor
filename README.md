@@ -55,6 +55,7 @@ sudo systemctl start process-monitor.service
 ### Взаимодействие с тестовым процессом
 
 ```bash
+sudo chmod +x ./examples/process.sh
 sudo examples/process.sh start
 sudo examples/process.sh restart
 sudo examples/process.sh stop
