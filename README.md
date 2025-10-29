@@ -5,7 +5,7 @@
 ```text
 process-monitor/
 ├── examples/
-│   ├── process.sh           # Пример тестового процесса
+│   ├── test         # Пример тестового процесса
 ├── scripts/
 │   ├── install.sh           # Скрипт установки
 │   └── uninstall.sh         # Скрипт удаления
@@ -55,10 +55,22 @@ sudo systemctl start process-monitor.service
 ### Взаимодействие с тестовым процессом
 
 ```bash
-sudo chmod +x ./examples/process.sh
-sudo examples/process.sh start
-sudo examples/process.sh restart
-sudo examples/process.sh stop
+#запуск
+sudo cp exampes/test /usr/local/bin/test
+sudo chmod +x /usr/local/bin/test
+sudo /usr/local/bin/test &
+
+# Убьем процесс test
+sudo pkill -f "/usr/local/bin/test"
+
+# Подождем минуту или запустим монитор вручную
+sudo /usr/local/bin/process_monitor.sh
+
+# Запустим процесс снова
+sudo /usr/local/bin/test &
+
+# Снова запустим монитор - должен залогировать перезапуск
+sudo /usr/local/bin/process_monitor.sh
 ```
 
 ### Проверка статуса:
