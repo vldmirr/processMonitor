@@ -89,16 +89,22 @@ tail -f /var/log/monitoring.log
 
 Скрипт записывает следующие события в /var/log/monitoring.log:
 
-- **INFO:** Успешная отправка запроса, перезапуск процесса
+- **response:** Данные с запроса
 
-- **ERROR:** Проблемы с сервером мониторинга
+- **HTTP code:** Код ответа или код ошибки возникшая в процессе запроса
+
+- **INFO:** Информация о запуске/остановки процесса
+
+- **ERROR:** Ошибка о не доступности сервера
 
 Пример логов:
 
 ```text
-2025-10-26 22:40:00 - INFO: Monitoring request sent successfully
-2025-10-26 22:41:00 - INFO: Process 'nginx' was restarted
-2025-10-26 22:42:00 - ERROR: Monitoring server unavailable (curl error: 7)
+2025-10-29 13:26:12 - {
+  "uuid": "085c7e80-6eb7-445a-aff1-ef40e98b8de5"
+}
+2025-10-29 13:26:12 - HTTP code: 200
+
 ```
 
 ## Удаление 
