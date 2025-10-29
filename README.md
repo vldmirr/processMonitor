@@ -23,7 +23,8 @@ process-monitor/
 ```bash
 git clone https://github.com/vldmirr/processMonitor
 cd processMonitor
-sudo scripts/install.sh
+sudo chmod +x scripts/install.sh
+sudo ./scripts/install.sh
 ```
 
 ### Ручная установка:
