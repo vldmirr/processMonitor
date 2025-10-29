@@ -1,8 +1,9 @@
 #!/bin/bash
 
+#"https://test.com/monitoring/test/api"
 LOG_FILE="/var/log/monitoring.log"
-MONITORING_URL="https://test.com/monitoring/test/api"
-PROCESS_NAME="test"
+URL="https://httpbin.dev/uuid"
+NAME="test"
 STATE_FILE="/var/run/process_monitor.state"
 CURRENT_STATE=""
 
@@ -13,7 +14,7 @@ log() {
 
 #проверки процесса
 check() {
-    if pgrep -x "$PROCESS_NAME" > /dev/null; then
+    if pgrep -x "$NAME" > /dev/null; then
         echo "running"
     else
         echo "stopped"
@@ -23,13 +24,17 @@ check() {
 #отправки запроса
 sendReq() {
     local response_code
-    
+    local response
+
+    #получаем данные с запроса
+    response=$(curl -sS "$URL")
     # Отправляем HTTPS запрос и получаем код ответа
-    response_code=$(curl -s -o /dev/null -w "%{http_code}" -H "User-Agent: ProcessMonitor/1.0" "$MONITORING_URL" 2>/dev/null)
+    response_code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
     
     if [ "$response_code" -eq 200 ] || [ "$response_code" -eq 201 ]; then
         return 0
     else
+        log "$response"
         log "ERROR: Monitoring server unavailable. HTTP code: $response_code"
         return 1
     fi
@@ -46,17 +51,16 @@ main() {
         PREVIOUS_STATE="unknown"
     fi
     
-    # Если процесс запущен
+    # Если процесс запущен отправляем запрос 
     if [ "$CURRENT_STATE" = "running" ]; then
-        # Отправляем запрос к серверу мониторинга
-        if ! sendReq; then
-            # Ошибка уже залогирована в функции
+       
+        if ! sendReq; then    
             true
         fi
         
         # Проверяем, был ли процесс перезапущен
         if [ "$PREVIOUS_STATE" = "stopped" ] && [ "$CURRENT_STATE" = "running" ]; then
-            log "INFO: Process '$PROCESS_NAME' was restarted"
+            log "INFO: Process '$NAME' was restarted"
         fi
     fi
     
