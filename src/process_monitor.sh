@@ -1,55 +1,68 @@
 #!/bin/bash
 
 LOG_FILE="/var/log/monitoring.log"
-URL="https://test.com/monitoring/test/api"
+MONITORING_URL="https://test.com/monitoring/test/api"
 PROCESS_NAME="test"
 STATE_FILE="/var/run/process_monitor.state"
+CURRENT_STATE=""
 
-# Функция для логирования
+#логирование
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
-    logger "ProcessMonitor: $1"
 }
 
-log "DEBUG: Script started"
-
-# Проверяем существование STATE_FILE
-if [ ! -f "$STATE_FILE" ]; then
-    log "DEBUG: State file created"
-    echo "unknown" > "$STATE_FILE"
-fi
-
-# Проверяем процесс
-if pgrep -x "$PROCESS_NAME" > /dev/null; then
-    log "DEBUG: Process $PROCESS_NAME is running"
-    CURRENT_STATE="running"
-else
-    log "DEBUG: Process $PROCESS_NAME is NOT running"
-    CURRENT_STATE="stopped"
-fi
-
-# Читаем предыдущее состояние
-PREVIOUS_STATE=$(cat "$STATE_FILE")
-log "DEBUG: Previous state: $PREVIOUS_STATE, Current state: $CURRENT_STATE"
-
-# Если процесс запущен
-if [ "$CURRENT_STATE" = "running" ]; then
-    log "DEBUG: Sending monitoring request"
-    
-    # Пробуем отправить запрос
-    if curl -s -o /dev/null -w "%{http_code}" -H "User-Agent: ProcessMonitor/1.0" "$URL" > /dev/null 2>&1; then
-        log "DEBUG: Monitoring request successful"
+#проверки процесса
+check() {
+    if pgrep -x "$PROCESS_NAME" > /dev/null; then
+        echo "running"
     else
-        log "ERROR: Monitoring server unavailable or curl failed"
+        echo "stopped"
+    fi
+}
+
+#отправки запроса
+sendReq() {
+    local response_code
+    
+    # Отправляем HTTPS запрос и получаем код ответа
+    response_code=$(curl -s -o /dev/null -w "%{http_code}" -H "User-Agent: ProcessMonitor/1.0" "$MONITORING_URL" 2>/dev/null)
+    
+    if [ "$response_code" -eq 200 ] || [ "$response_code" -eq 201 ]; then
+        return 0
+    else
+        log "ERROR: Monitoring server unavailable. HTTP code: $response_code"
+        return 1
+    fi
+}
+
+# Основная логика
+main() {
+    CURRENT_STATE=$(check)
+    
+    # Читаем предыдущее состояние
+    if [ -f "$STATE_FILE" ]; then
+        PREVIOUS_STATE=$(cat "$STATE_FILE")
+    else
+        PREVIOUS_STATE="unknown"
     fi
     
-    # Проверяем перезапуск
-    if [ "$PREVIOUS_STATE" = "stopped" ] && [ "$CURRENT_STATE" = "running" ]; then
-        log "INFO: Process '$PROCESS_NAME' was restarted"
+    # Если процесс запущен
+    if [ "$CURRENT_STATE" = "running" ]; then
+        # Отправляем запрос к серверу мониторинга
+        if ! sendReq; then
+            # Ошибка уже залогирована в функции
+            true
+        fi
+        
+        # Проверяем, был ли процесс перезапущен
+        if [ "$PREVIOUS_STATE" = "stopped" ] && [ "$CURRENT_STATE" = "running" ]; then
+            log "INFO: Process '$PROCESS_NAME' was restarted"
+        fi
     fi
-fi
+    
+    # Сохраняем текущее состояние
+    echo "$CURRENT_STATE" > "$STATE_FILE"
+}
 
-# Сохраняем состояние
-echo "$CURRENT_STATE" > "$STATE_FILE"
-log "DEBUG: Script finished"
-                             
+# Запуск основной функции
+main "$@"
