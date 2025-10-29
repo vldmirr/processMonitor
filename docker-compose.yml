@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  monitoring-server:
+    build: .
+    ports:
+      - "8443:443"
+    environment:
+      - NGINX_HOST=test.com
+    restart: unless-stopped
+
+  # Дополнительно можно добавить тестовый процесс для демонстрации
+  test-process:
+    image: alpine:latest
+    command: >
+      sh -c "
+      echo 'Starting test process...' &&
+      while true; do
+        echo 'Test process is running...' &&
+        sleep 30
+      done"
+    restart: unless-stopped
