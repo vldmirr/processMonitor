@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROCESS_NAME="test_demo"
+PROCESS_NAME="test"
 
 startProcess() {
     echo "Starting test process..."
