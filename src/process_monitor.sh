@@ -32,7 +32,9 @@ sendReq() {
     response_code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
     
     if [ "$response_code" -eq 200 ] || [ "$response_code" -eq 201 ]; then
-        return 0
+        log "$response"
+        log "HTTP code: $response_code"
+        return 1
     else
         log "$response"
         log "ERROR: Monitoring server unavailable. HTTP code: $response_code"
