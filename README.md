@@ -6,7 +6,6 @@
 process-monitor/
 ├── examples/
 │   ├── process.sh           # Пример тестового процесса
-│   └── config.sh            # Пример конфигурации
 ├── scripts/
 │   ├── install.sh           # Скрипт установки
 │   └── uninstall.sh         # Скрипт удаления
