@@ -1,1 +1,3 @@
-expamples/*
+nginx/ssl/*.pem
+nginx/ssl/*.crt
+nginx/ssl/*.key
