@@ -55,7 +55,7 @@ sudo systemctl start process-monitor.service
 ### Запуск тестового процесса
 
 ```bash
-sudo examples/test_process.sh start
+sudo examples/process.sh start
 ```
 
 ### Проверка статуса:
