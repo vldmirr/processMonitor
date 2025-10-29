@@ -22,7 +22,7 @@ process-monitor/
 
 ```bash
 git clone https://github.com/vldmirr/processMonitor
-cd process-monitor
+cd processMonitor
 sudo scripts/install.sh
 ```
 
