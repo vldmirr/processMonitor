@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #"https://test.com/monitoring/test/api"
-#"https://httpbin.dev/uuid"
 LOG_FILE="/var/log/monitoring.log"
 URL="https://localhost:8443/monitoring/test/api"
 NAME="test"
 PID="/var/run/${NAME}.pid" 
 STATE_FILE="/var/run/process_monitor.state"
 CURRENT_STATE=""
+CURL_OPTS="-k --cacert nginx/ssl/server.pem --connect-timeout 10 --max-time 30"
 
 #логирование
 log() {
@@ -15,7 +15,7 @@ log() {
 }
 
 #проверки зависимостей
-checkDependencies() {
+checkDependen() {
     local deps=("curl" "pgrep")
     for dep in "${deps[@]}"; do
         if ! command -v "$dep" &> /dev/null; then
@@ -37,9 +37,6 @@ checkProcess() {
     #Ищем процесс (включая Docker контейнеры)
     if pgrep -f "$NAME" > /dev/null; then
         currPID=$(pgrep -f "$NAME" | head -1) 
-    #Если процесс запущен в Docker
-    elif docker ps --format "table {{.Names}}" 2>/dev/null | grep -q "$NAME"; then
-        currPID="docke-$NAME"
     else
         currPID=""
     fi
@@ -47,7 +44,6 @@ checkProcess() {
     #Читаем предыдущий PID из файла
     if [ -f "$PID" ]; then
         prevPID=$(cat "$PID" 2>/dev/null)
-        log "INFO: Process $NAME is runninh"
         echo "running"
     else
         prevPID=""
@@ -59,10 +55,10 @@ checkProcess() {
     #Если процесс запущен
     if [ -n "$currPID" ]; then 
         # Проверка на перезапуск
-        if [ -n "$prevPID" ] && [ "$currPID" != "$prevPID" ]; then  # Fixed: added spaces
+        if [ -n "$prevPID" ] && [ "$currPID" != "$prevPID" ]; then  
             log "INFO: Process $NAME was restarted. Old PID: $prevPID, New PID: $currPID"
         elif [ -z "$prevPID" ]; then
-            log "INFO: Process $_NAME started. PID: $current_pid"
+            log "INFO: Process $NAME started. PID: $current_pid"
 
         fi
 
@@ -82,13 +78,13 @@ checkProcess() {
 
 #отправки запроса
 sendReq() {
-    local response_code
+    local responseCode
     local response
 
     #получаем данные с запроса
-    response=$(curl -sS "$URL")
+    response=$(curl -sS $CURL_OPTS  "$URL")
     # Отправляем HTTPS запрос и получаем код ответа
-    response_code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+    response_code=$(curl -s -o /dev/null -w "%{http_code}" $CURL_OPTS "$URL" 2>/dev/null)
     
     if [ "$response_code" -eq 200 ] || [ "$response_code" -eq 201 ]; then
         log "$response"
@@ -103,7 +99,8 @@ sendReq() {
 
 # Основная логика
 main() {
-    CURRENT_STATE=$(check)
+
+    CURRENT_STATE=$(checkProcess)
     
     # Читаем предыдущее состояние
     if [ -f "$STATE_FILE" ]; then
@@ -127,6 +124,9 @@ main() {
     
     # Сохраняем текущее состояние
     echo "$CURRENT_STATE" > "$STATE_FILE"
+    
+    checkDependen
+
 }
 
 # Запуск основной функции

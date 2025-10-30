@@ -44,6 +44,12 @@ sudo systemctl enable process-monitor.timer
 sudo systemctl start process-monitor.timer
 ```
 
+### Cгенирировать ssl файлы
+```bash
+sudo chmod +x ./scripts/generate_cert.sh
+sudo ./scripts/generate_cert.sh
+```
+
 ## Использование 
 
 ### Запуск сервиса:
@@ -52,7 +58,21 @@ sudo systemctl start process-monitor.timer
 sudo systemctl start process-monitor.service
 ```
 
-### Взаимодействие с тестовым процессом
+### Взаимодействие с тестовым процессом:
+
+#### Через Docker:
+
+Запустите тестовый сервер:
+
+```bash
+docker-compose up -d
+```
+Проверьте работу сервера:
+
+```bash
+curl -k https://localhost:8443/monitoring/test/api
+```
+#### Через sh скрипт:
 
 ```bash
 #запуск
