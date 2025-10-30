@@ -10,12 +10,12 @@ openssl req -x509 -newkey rsa:4096 -nodes \
     -subj "/CN=test.com" \
     -addext "subjectAltName=DNS:test.com,DNS:localhost,IP:127.0.0.1"
 
-# Создаем PEM файл (комбинация приватного ключа и сертификата)
+#create PEM
 cat nginx/ssl/server.key nginx/ssl/server.crt > nginx/ssl/server.pem
 
-# Также создаем отдельные файлы в PEM формате
-cp nginx/ssl/server.key nginx/ssl/server-key.pem
-cp nginx/ssl/server.crt nginx/ssl/server-cert.pem
+chmod 600 nginx/ssl/server.key
+chmod 600 nginx/ssl/server.pem
+chmod 644 nginx/ssl/server.crt
 
 echo "SSL certificates generated in nginx/ssl/"
 echo "You can now run: docker-compose up -d"
