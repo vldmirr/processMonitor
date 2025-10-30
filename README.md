@@ -116,7 +116,6 @@ tail -f /var/log/monitoring.log
 
 ```text
 2025-10-30 13:24:11 - INFO: Process test (PID: 1389) is running and monitoring check passed
-2025-10-30 13:25:12 - INFO: Process test is NOT running
 2025-10-30 13:26:13 - INFO: Process test is runnig
 2025-10-30 13:26:13 - INFO: Process test is NOT running
 2025-10-30 13:26:13 - INFO: Process test was restarted. Old PID: 1389, New PID: 2339
