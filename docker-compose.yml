@@ -17,6 +17,7 @@ services:
     restart: unless-stopped
 
   monitoring-server:
+    container_name: server
     build: .
     ports:
       - "443:443"
@@ -28,7 +29,7 @@ services:
 
   test-process:
     image: alpine:latest
-    container_name: test-process
+    container_name: test
     command: >
       sh -c "
       apk add --no-cache curl &&
