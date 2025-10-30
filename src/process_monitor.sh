@@ -39,7 +39,7 @@ checkProcess() {
     #Ищем процесс (включая Docker контейнеры)
     if pgrep -f "$NAME" > /dev/null; then
         currPID=$(pgrep -f "$NAME" | head -1)
-        log "INFO: Process $NAME is runnig"
+        log "INFO: Process $NAME is running"
         echo "running" 
     else
         currPID=""
@@ -49,7 +49,7 @@ checkProcess() {
     if [ -f "$PID" ]; then
         prevPID=$(cat "$PID" 2>/dev/null)
         log "INFO: Process $NAME is NOT running"
-        echo "stoped"
+        echo "running"
     else
         prevPID=""
     fi
