@@ -5,10 +5,18 @@
 ```text
 process-monitor/
 ├── examples/
-│   ├── test         # Пример тестового процесса
-├── scripts/
-│   ├── install.sh           # Скрипт установки
-│   └── uninstall.sh         # Скрипт удаления
+│   ├── test                 # Пример тестового процесса
+├── nginx/
+│   ├── ssl                  # содержится *.crt,*.key,*.pem файлы, (вместе с папкой генерируются при помощи generate_cert.sh)
+│   ├── html
+|   |   └── api.json         # файл который формирует ответ при запросе через https
+│   └── nginx.conf           # конфигурационный файл веб-сервера
+├── scripts/ # Вспомогательные скрипты
+|   ├── setup-fix.sh         # для регенирации и внемения test.com напрямую в /etc/hosts 
+│   ├── generate_cert.sh     # по генерации ssl файлов
+│   ├── debug-connections.sh # для проверки dns
+│   ├── install.sh           # установки
+│   └── uninstall.sh         # удаления
 ├── src/
 │   ├── process_monitor.sh          # Основной скрипт мониторинга
 │   ├── process-monitor.service     # Systemd service файл
@@ -60,37 +68,19 @@ sudo systemctl start process-monitor.service
 
 ### Взаимодействие с тестовым процессом:
 
-#### Через Docker:
-
-Запустите тестовый сервер:
-
 ```bash
-docker-compose up -d
+cd processMonitor
+sudo docker-compose up -d
 ```
+После чего запустятся следующие контейнеры:
+`test`-сам тестовый процесс **работа** и **PID** которых мониторятся в логах каждую минуту.
+`dns-server`-сервер на котором запускается доменное имя **https://test.com/monitoring/test/api**.
+`server`-контейнер на котором поднимаю сайт **test.com**
+
 Проверьте работу сервера:
 
 ```bash
-curl -k https://localhost:8443/monitoring/test/api
-```
-#### Через sh скрипт:
-
-```bash
-#запуск
-sudo cp examples/test /usr/local/bin/test
-sudo chmod +x /usr/local/bin/test
-sudo /usr/local/bin/test &
-
-# Убьем процесс test
-sudo pkill -f "/usr/local/bin/test"
-
-# Подождем минуту или запустим монитор вручную
-sudo /usr/local/bin/process_monitor.sh
-
-# Запустим процесс снова
-sudo /usr/local/bin/test &
-
-# Снова запустим монитор - должен залогировать перезапуск
-sudo /usr/local/bin/process_monitor.sh
+curl -k https://test.com/monitoring/test/api
 ```
 
 ### Проверка статуса:
@@ -101,11 +91,15 @@ sudo systemctl status process-monitor.timer
 sudo journalctl -u process-monitor.service -f
 
 systemctl list-timers
-
-tail -f /var/log/monitoring.log
 ```
 
 ## Логирование
+
+Просмотр лого осуществлятся при помощи данной комманды:
+
+```bash
+tail -f /var/log/monitoring.log
+```
 
 Скрипт записывает следующие события в /var/log/monitoring.log:
 
@@ -120,15 +114,38 @@ tail -f /var/log/monitoring.log
 Пример логов:
 
 ```text
-2025-10-29 13:26:12 - {
-  "uuid": "085c7e80-6eb7-445a-aff1-ef40e98b8de5"
-}
-2025-10-29 13:26:12 - HTTP code: 200
-
+2025-10-30 13:23:10 - INFO: Process test is NOT running
+2025-10-30 13:23:10 - {"status": "ok", "message": "Monitoring endpoint working", "timestamp": "30/Oct/2025:10:23:10 +0000"}
+2025-10-30 13:23:10 - HTTP code: 200
+2025-10-30 13:23:10 - INFO: Process test (PID: 1389) is running and monitoring check passed
+2025-10-30 13:24:11 - INFO: Process test is runnig
+2025-10-30 13:24:11 - INFO: Process test is NOT running
+2025-10-30 13:24:11 - {"status": "ok", "message": "Monitoring endpoint working", "timestamp": "30/Oct/2025:10:24:11 +0000"}
+2025-10-30 13:24:11 - HTTP code: 200
+2025-10-30 13:24:11 - INFO: Process test (PID: 1389) is running and monitoring check passed
+2025-10-30 13:25:12 - INFO: Process test is NOT running
+2025-10-30 13:26:13 - INFO: Process test is runnig
+2025-10-30 13:26:13 - INFO: Process test is NOT running
+2025-10-30 13:26:13 - INFO: Process test was restarted. Old PID: 1389, New PID: 2339
+2025-10-30 13:26:13 - {"status": "ok", "message": "Monitoring endpoint working", "timestamp": "30/Oct/2025:10:26:13 +0000"}
+2025-10-30 13:26:13 - HTTP code: 200
+2025-10-30 13:26:13 - INFO: Process test (PID: 2339) is running and monitoring check passed
+2025-10-30 13:27:14 - INFO: Process test is runnig
+2025-10-30 13:27:14 - INFO: Process test is NOT running
+2025-10-30 13:27:14 - {"status": "ok", "message": "Monitoring endpoint working", "timestamp": "30/Oct/2025:10:27:14 +0000"}
+2025-10-30 13:27:14 - HTTP code: 200
+2025-10-30 13:27:14 - INFO: Process test (PID: 2339) is running and monitoring check passed
+2025-10-30 13:28:15 - INFO: Process test is runnig
+2025-10-30 13:28:15 - INFO: Process test is NOT running
+2025-10-30 13:28:15 - {"status": "ok", "message": "Monitoring endpoint working", "timestamp": "30/Oct/2025:10:28:15 +0000"}
+2025-10-30 13:28:15 - HTTP code: 200
+2025-10-30 13:28:15 - INFO: Process test (PID: 2339) is running and monitoring check passed
 ```
 
 ## Удаление 
 
 ```bash
-sudo scripts/uninstall.sh
+sudo docker-compose down
+sudo chmod +x scripts/uninstall.sh
+sudo ./scripts/uninstall.sh
 ```
