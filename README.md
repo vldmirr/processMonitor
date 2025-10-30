@@ -115,14 +115,6 @@ tail -f /var/log/monitoring.log
 Пример логов:
 
 ```text
-2025-10-30 13:23:10 - INFO: Process test is NOT running
-2025-10-30 13:23:10 - {"status": "ok", "message": "Monitoring endpoint working", "timestamp": "30/Oct/2025:10:23:10 +0000"}
-2025-10-30 13:23:10 - HTTP code: 200
-2025-10-30 13:23:10 - INFO: Process test (PID: 1389) is running and monitoring check passed
-2025-10-30 13:24:11 - INFO: Process test is runnig
-2025-10-30 13:24:11 - INFO: Process test is NOT running
-2025-10-30 13:24:11 - {"status": "ok", "message": "Monitoring endpoint working", "timestamp": "30/Oct/2025:10:24:11 +0000"}
-2025-10-30 13:24:11 - HTTP code: 200
 2025-10-30 13:24:11 - INFO: Process test (PID: 1389) is running and monitoring check passed
 2025-10-30 13:25:12 - INFO: Process test is NOT running
 2025-10-30 13:26:13 - INFO: Process test is runnig
@@ -130,17 +122,6 @@ tail -f /var/log/monitoring.log
 2025-10-30 13:26:13 - INFO: Process test was restarted. Old PID: 1389, New PID: 2339
 2025-10-30 13:26:13 - {"status": "ok", "message": "Monitoring endpoint working", "timestamp": "30/Oct/2025:10:26:13 +0000"}
 2025-10-30 13:26:13 - HTTP code: 200
-2025-10-30 13:26:13 - INFO: Process test (PID: 2339) is running and monitoring check passed
-2025-10-30 13:27:14 - INFO: Process test is runnig
-2025-10-30 13:27:14 - INFO: Process test is NOT running
-2025-10-30 13:27:14 - {"status": "ok", "message": "Monitoring endpoint working", "timestamp": "30/Oct/2025:10:27:14 +0000"}
-2025-10-30 13:27:14 - HTTP code: 200
-2025-10-30 13:27:14 - INFO: Process test (PID: 2339) is running and monitoring check passed
-2025-10-30 13:28:15 - INFO: Process test is runnig
-2025-10-30 13:28:15 - INFO: Process test is NOT running
-2025-10-30 13:28:15 - {"status": "ok", "message": "Monitoring endpoint working", "timestamp": "30/Oct/2025:10:28:15 +0000"}
-2025-10-30 13:28:15 - HTTP code: 200
-2025-10-30 13:28:15 - INFO: Process test (PID: 2339) is running and monitoring check passed
 ```
 
 ## Удаление 
