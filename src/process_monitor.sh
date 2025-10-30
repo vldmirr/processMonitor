@@ -2,7 +2,7 @@
 
 #"https://test.com/monitoring/test/api"
 LOG_FILE="/var/log/monitoring.log"
-URL="https://localhost:8443/monitoring/test/api"
+URL="https://test.com/monitoring/test/api"
 NAME="test"
 PID="/var/run/${NAME}.pid" 
 STATE_FILE="/var/run/process_monitor.state"
@@ -73,7 +73,7 @@ checkProcess() {
         fi
     # Удаление процесса если тот не запущен
     # else 
-    #     if [ -f "$PID" ]; then  # Fixed: added spaces
+    #     if [ -f "$PID" ]; then
     #         rm -f "$PID"
     #     fi
     fi
