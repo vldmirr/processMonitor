@@ -25,9 +25,11 @@ checkDependen() {
     done
 }
 
-
 #проверки процесса
 checkProcess() {
+    # проверяем наличие зависимости
+    checkDependen
+
     #прошлый и текущий пид
     local currPID
     local prevPID
@@ -36,7 +38,9 @@ checkProcess() {
 
     #Ищем процесс (включая Docker контейнеры)
     if pgrep -f "$NAME" > /dev/null; then
-        currPID=$(pgrep -f "$NAME" | head -1) 
+        currPID=$(pgrep -f "$NAME" | head -1)
+        log "INFO: Process $NAME is runnig"
+        echo "running" 
     else
         currPID=""
     fi
@@ -44,11 +48,10 @@ checkProcess() {
     #Читаем предыдущий PID из файла
     if [ -f "$PID" ]; then
         prevPID=$(cat "$PID" 2>/dev/null)
-        echo "running"
+        log "INFO: Process $NAME is NOT running"
+        echo "stoped"
     else
         prevPID=""
-        log "INFO: Process $NAME is NOT running"
-        echo "stopped"
     fi
     
 
@@ -125,8 +128,6 @@ main() {
     # Сохраняем текущее состояние
     echo "$CURRENT_STATE" > "$STATE_FILE"
     
-    checkDependen
-
 }
 
 # Запуск основной функции
