@@ -11,6 +11,7 @@ services:
 
   # Дополнительно можно добавить тестовый процесс для демонстрации
   test-process:
+    container_name: test
     image: alpine:latest
     command: >
       sh -c "
