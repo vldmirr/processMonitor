@@ -1,23 +1,45 @@
 version: '3.8'
 
 services:
+  dns-server:
+    image: alpine:latest
+    container_name: dns-server
+    command: >
+      sh -c "
+      apk add --no-cache dnsmasq &&
+      echo 'address=/test.com/127.0.0.1' > /etc/dnsmasq.conf &&
+      echo 'user=root' >> /etc/dnsmasq.conf &&
+      dnsmasq -k"
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "53:53/udp"
+    restart: unless-stopped
+
   monitoring-server:
     build: .
     ports:
-      - "8443:443"
+      - "443:443"
     environment:
       - NGINX_HOST=test.com
     restart: unless-stopped
+    depends_on:
+      - dns-server
 
-  # Дополнительно можно добавить тестовый процесс для демонстрации
   test-process:
-    container_name: test
     image: alpine:latest
+    container_name: test-process
     command: >
       sh -c "
-      echo 'Starting test process...' &&
+      apk add --no-cache curl &&
+      echo 'Starting test process at $$(date)' &&
       while true; do
-        echo 'Test process is running...' &&
+        echo 'Test process is running... PID: $$' &&
         sleep 30
       done"
     restart: unless-stopped
+
+# Настройка DNS для хоста
+networks:
+  default:
+    driver: bridge
