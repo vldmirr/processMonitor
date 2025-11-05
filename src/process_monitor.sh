@@ -30,10 +30,9 @@ checkProcess() {
     local prevPID=""
     local process_found=false
     
-    # Проверяем наличие зависимости
     checkDependencies
 
-    # Ищем процесс
+    # поиск процесс
     currPID=$(pgrep -f "$NAME" | head -1)
     
     if [ -n "$currPID" ]; then
@@ -41,7 +40,7 @@ checkProcess() {
         log "INFO: Process $NAME is running (PID: $currPID)"
     else
         log "INFO: Process $NAME is NOT running"
-        # Удаляем PID-файл если процесс не найден
+        # удаляем PID-файл если процесс не найден
         if [ -f "$PID_FILE" ]; then
             rm -f "$PID_FILE"
         fi
@@ -79,7 +78,7 @@ sendReq() {
     local responseCode
     local response
 
-    #
+    #код/ответ
     response=$(curl -sS -w "\n%{http_code}" $CURL_OPTS "$URL" 2>/dev/null)
     response_code=$(echo "$response" | tail -n1)
     response_body=$(echo "$response" | head -n -1)
@@ -97,33 +96,26 @@ sendReq() {
 
 # Основная логика
 main() {
-
+    local previous_state=""
+    
     CURRENT_STATE=$(checkProcess)
     
     # Читаем предыдущее состояние
     if [ -f "$STATE_FILE" ]; then
-        PREVIOUS_STATE=$(cat "$STATE_FILE")
+        previous_state=$(cat "$STATE_FILE")
     else
-        PREVIOUS_STATE="unknown"
+        previous_state="unknown"
     fi
     
-    # Если процесс запущен отправляем запрос 
-    if [ "$CURRENT_STATE" = "running" ]; then
-       
-        if ! sendReq; then
-            true
-        fi
-        
-        # Проверяем, был ли процесс перезапущен
-        if [ "$PREVIOUS_STATE" = "stopped" ] && [ "$CURRENT_STATE" = "running" ]; then
-            log "INFO: Process '$NAME' was restarted"
-        fi
+    # был ли процесс перезапущен
+    if [ "$previous_state" = "stopped" ] && [ "$CURRENT_STATE" = "running" ]; then
+        log "INFO: Process '$NAME' was restarted (state change: stopped → running)"
+    elif [ "$previous_state" = "running" ] && [ "$CURRENT_STATE" = "stopped" ]; then
+        log "INFO: Process '$NAME' was stopped (state change: running → stopped)"
     fi
     
-    # Сохраняем текущее состояние
+    # сохраняем текущее состояние
     echo "$CURRENT_STATE" > "$STATE_FILE"
-    
 }
 
-# Запуск основной функции
 main "$@"
