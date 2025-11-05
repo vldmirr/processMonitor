@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#"https://test.com/monitoring/test/api"
 LOG_FILE="/var/log/monitoring.log"
 URL="https://test.com/monitoring/test/api"
 NAME="test"
@@ -84,10 +83,10 @@ sendReq() {
     local responseCode
     local response
 
-    #получаем данные с запроса
-    response=$(curl -sS $CURL_OPTS  "$URL")
-    # Отправляем HTTPS запрос и получаем код ответа
-    response_code=$(curl -s -o /dev/null -w "%{http_code}" $CURL_OPTS "$URL" 2>/dev/null)
+    #
+    response=$(curl -sS -w "\n%{http_code}" $CURL_OPTS "$URL" 2>/dev/null)
+    response_code=$(echo "$response" | tail -n1)
+    response_body=$(echo "$response" | head -n -1)
     
     if [ "$response_code" -eq 200 ] || [ "$response_code" -eq 201 ]; then
         log "$response"
