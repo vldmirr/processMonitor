@@ -14,7 +14,7 @@ log() {
 }
 
 #проверки зависимостей
-checkDependen() {
+checkDependens() {
     local deps=("curl" "pgrep")
     for dep in "${deps[@]}"; do
         if ! command -v "$dep" &> /dev/null; then
@@ -30,7 +30,7 @@ checkProcess() {
     local prevPID=""
     local process_found=false
     
-    checkDependencies
+    checkDependens
 
     # поиск процесс
     currPID=$(pgrep -f "$NAME" | head -1)
