@@ -26,56 +26,52 @@ checkDependen() {
 
 #проверки процесса
 checkProcess() {
-    # проверяем наличие зависимости
-    checkDependen
+    local currPID=""
+    local prevPID=""
+    local process_found=false
+    
+    # Проверяем наличие зависимости
+    checkDependencies
 
-    #прошлый и текущий пид
-    local currPID
-    local prevPID
-
+    # Ищем процесс
     currPID=$(pgrep -f "$NAME" | head -1)
-
-    #Ищем процесс (включая Docker контейнеры)
-    if pgrep -f "$NAME" > /dev/null; then
-        currPID=$(pgrep -f "$NAME" | head -1)
-        log "INFO: Process $NAME is running"
-        echo "running" 
+    
+    if [ -n "$currPID" ]; then
+        process_found=true
+        log "INFO: Process $NAME is running (PID: $currPID)"
     else
-        currPID=""
+        log "INFO: Process $NAME is NOT running"
+        # Удаляем PID-файл если процесс не найден
+        if [ -f "$PID_FILE" ]; then
+            rm -f "$PID_FILE"
+        fi
+        echo "stopped"
+        return
     fi
 
-    #Читаем предыдущий PID из файла
-    if [ -f "$PID" ]; then
-        prevPID=$(cat "$PID" 2>/dev/null)
-        log "INFO: Process $NAME is NOT running"
-        echo "running"
-    else
-        prevPID=""
+    # Читаем предыдущий PID из файла
+    if [ -f "$PID_FILE" ]; then
+        prevPID=$(cat "$PID_FILE" 2>/dev/null)
     fi
     
-
-    #Если процесс запущен
-    if [ -n "$currPID" ]; then 
-        # Проверка на перезапуск
-        if [ -n "$prevPID" ] && [ "$currPID" != "$prevPID" ]; then  
-            log "INFO: Process $NAME was restarted. Old PID: $prevPID, New PID: $currPID"
-        elif [ -z "$prevPID" ]; then
-            log "INFO: Process $NAME started. PID: $current_pid"
-
-        fi
-
-        echo "$currPID" > "$PID"
-
-        #Отправляем запрос на сервер
-        if sendReq; then
-            log "INFO: Process $NAME (PID: $currPID) is running and monitoring check passed"
-        fi
-    # Удаление процесса если тот не запущен
-    # else 
-    #     if [ -f "$PID" ]; then
-    #         rm -f "$PID"
-    #     fi
+    # Проверка на перезапуск
+    if [ -n "$prevPID" ] && [ "$currPID" != "$prevPID" ]; then  
+        log "INFO: Process $NAME was restarted. Old PID: $prevPID, New PID: $currPID"
+    elif [ -z "$prevPID" ]; then
+        log "INFO: Process $NAME started. PID: $currPID"
     fi
+
+    # Сохраняем текущий PID
+    echo "$currPID" > "$PID_FILE"
+    
+    # Отправляем запрос на сервер
+    if sendReq; then
+        log "INFO: Process $NAME (PID: $currPID) monitoring check passed"
+    else
+        log "WARNING: Process $NAME (PID: $currPID) monitoring check failed"
+    fi
+    
+    echo "running"
 }
 
 #отправки запроса
