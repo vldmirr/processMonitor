@@ -3,7 +3,7 @@
 LOG_FILE="/var/log/monitoring.log"
 URL="https://test.com/monitoring/test/api"
 NAME="test"
-PID="/var/run/${NAME}.pid" 
+PID_FILE="/var/run/${NAME}.pid" 
 STATE_FILE="/var/run/process_monitor.state"
 CURRENT_STATE=""
 CURL_OPTS="-k --cacert nginx/ssl/server.pem --connect-timeout 10 --max-time 30"
@@ -49,12 +49,12 @@ checkProcess() {
         return
     fi
 
-    # Читаем предыдущий PID из файла
+    # читаем прошлый PID
     if [ -f "$PID_FILE" ]; then
         prevPID=$(cat "$PID_FILE" 2>/dev/null)
     fi
-    
-    # Проверка на перезапуск
+
+    #если процесс перезапущен
     if [ -n "$prevPID" ] && [ "$currPID" != "$prevPID" ]; then  
         log "INFO: Process $NAME was restarted. Old PID: $prevPID, New PID: $currPID"
     elif [ -z "$prevPID" ]; then
