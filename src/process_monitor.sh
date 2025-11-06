@@ -18,7 +18,7 @@ checkDependens() {
     local deps=("curl" "pgrep")
     for dep in "${deps[@]}"; do
         if ! command -v "$dep" &> /dev/null; then
-            log_message "ERROR: Required dependency $dep is not installed"
+            log "ERROR: Required dependency $dep is not installed"
             exit 1
         fi
     done
