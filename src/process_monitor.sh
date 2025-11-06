@@ -80,7 +80,7 @@ checkProcess() {
     if sendReq; then
         log "INFO: Process $NAME (PID: $currPID) monitoring check passed"
     else
-        log "WARNING: Process $NAME (PID: $currPID) monitoring check failed"
+        log "WARNING: Process $NAME monitoring check failed"
     fi
     
     echo "running"
