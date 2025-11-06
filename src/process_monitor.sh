@@ -51,7 +51,7 @@ checkProcess() {
 
     # поиск процесс
     if pgrep -f "$NAME" > /dev/null; then
-        current_pid=$(pgrep -f "$NAME" | head -1)
+        currPID=$(pgrep -f "$NAME" | head -1)
         log "INFO: Found system process with PID: $currPID"
     else
         # удаляем PID-файл если процесс не найден
