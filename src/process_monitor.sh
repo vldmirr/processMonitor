@@ -4,7 +4,7 @@ LOG_FILE="/var/log/monitoring.log"
 URL="https://test.com/monitoring/test/api"
 NAME="test"
 PID_FILE="/var/run/${NAME}.pid" 
-STATE_FILE="/var/run/process_monitor.state"
+#STATE_FILE="/var/run/process_monitor.state"
 CURRENT_STATE=""
 CURL_OPTS="-k --cacert nginx/ssl/server.pem --connect-timeout 10 --max-time 30"
 
@@ -88,26 +88,28 @@ checkProcess() {
 
 # Основная логика
 main() {
-    local previous_state=""
+#     local previous_state=""
     
-    CURRENT_STATE=$(checkProcess)
+#     CURRENT_STATE=$(checkProcess)
     
-    # Читаем предыдущее состояние
-    if [ -f "$STATE_FILE" ]; then
-        previous_state=$(cat "$STATE_FILE")
-    else
-        previous_state="unknown"
-    fi
+#     # Читаем предыдущее состояние
+#     if [ -f "$STATE_FILE" ]; then
+#         previous_state=$(cat "$STATE_FILE")
+#     else
+#         previous_state="unknown"
+#     fi
     
-    # был ли процесс перезапущен
-    if [ "$previous_state" = "stopped" ] && [ "$CURRENT_STATE" = "running" ]; then
-        log "INFO: Process '$NAME' was restarted (state change: stopped → running)"
-    elif [ "$previous_state" = "running" ] && [ "$CURRENT_STATE" = "stopped" ]; then
-        log "INFO: Process '$NAME' was stopped (state change: running → stopped)"
-    fi
+#     # был ли процесс перезапущен
+#     if [ "$previous_state" = "stopped" ] && [ "$CURRENT_STATE" = "running" ]; then
+#         log "INFO: Process '$NAME' was restarted (state change: stopped → running)"
+#     elif [ "$previous_state" = "running" ] && [ "$CURRENT_STATE" = "stopped" ]; then
+#         log "INFO: Process '$NAME' was stopped (state change: running → stopped)"
+#     fi
     
-    # сохраняем текущее состояние
-    echo "$CURRENT_STATE" > "$STATE_FILE"
+#     # сохраняем текущее состояние
+#     echo "$CURRENT_STATE" > "$STATE_FILE"
+
+    checkProcess
 }
 
 main "$@"
