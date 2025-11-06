@@ -24,28 +24,41 @@ checkDependens() {
     done
 }
 
+#отправки запроса
+sendReq() {
+    #код/ответ
+    response=$(curl -sS -w "\n%{http_code}" $CURL_OPTS "$URL" 2>/dev/null)
+    response_code=$(echo "$response" | tail -n1)
+    response_body=$(echo "$response" | head -n -1)
+    
+    if [ "$response_code" -eq 200 ] || [ "$response_code" -eq 201 ]; then
+        log "$response"
+        log "HTTP code: $response_code"
+        return 0 
+    else
+        log "$response"
+        log "ERROR: Monitoring server unavailable. HTTP code: $response_code"
+        return 1
+    fi
+}
+
 #проверки процесса
 checkProcess() {
     local currPID=""
     local prevPID=""
-    local process_found=false
     
     checkDependens
 
     # поиск процесс
-    currPID=$(pgrep -f "$NAME" | head -1)
-    
-    if [ -n "$currPID" ]; then
-        process_found=true
-        log "INFO: Process $NAME is running (PID: $currPID)"
+    if pgrep -f "$NAME" > /dev/null; then
+        current_pid=$(pgrep -f "$NAME" | head -1)
+        log "INFO: Found system process with PID: $currPID"
     else
-        log "INFO: Process $NAME is NOT running"
         # удаляем PID-файл если процесс не найден
+        log "INFO: Process $NAME is NOT running"
         if [ -f "$PID_FILE" ]; then
             rm -f "$PID_FILE"
         fi
-        echo "stopped"
-        return
     fi
 
     # читаем прошлый PID
@@ -71,24 +84,6 @@ checkProcess() {
     fi
     
     echo "running"
-}
-
-#отправки запроса
-sendReq() {
-    #код/ответ
-    response=$(curl -sS -w "\n%{http_code}" $CURL_OPTS "$URL" 2>/dev/null)
-    response_code=$(echo "$response" | tail -n1)
-    response_body=$(echo "$response" | head -n -1)
-    
-    if [ "$response_code" -eq 200 ] || [ "$response_code" -eq 201 ]; then
-        log "$response"
-        log "HTTP code: $response_code"
-        return 0 
-    else
-        log "$response"
-        log "ERROR: Monitoring server unavailable. HTTP code: $response_code"
-        return 1
-    fi
 }
 
 # Основная логика
