@@ -75,9 +75,6 @@ checkProcess() {
 
 #отправки запроса
 sendReq() {
-    local responseCode
-    local response
-
     #код/ответ
     response=$(curl -sS -w "\n%{http_code}" $CURL_OPTS "$URL" 2>/dev/null)
     response_code=$(echo "$response" | tail -n1)
