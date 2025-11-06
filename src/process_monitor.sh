@@ -53,7 +53,7 @@ checkProcess() {
         log "INFO: Found system process with PID: $currPID"
     else
         # удаляем PID-файл если процесс не найден
-        log "INFO: Process $NAME is NOT running"
+        log "ERORR: Process $NAME is NOT running"
         if [ -f "$PID_FILE" ]; then
             rm -f "$PID_FILE"
         fi
@@ -76,7 +76,7 @@ checkProcess() {
     if sendReq; then
         log "INFO: Process $NAME (PID: $currPID) monitoring check passed"
     else
-        log "INFO: Process $NAME monitoring check failed"
+        log "ERROR: Process $NAME monitoring check failed"
     fi
     
     echo "running"
