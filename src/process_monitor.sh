@@ -78,8 +78,6 @@ checkProcess() {
     else
         log "ERROR: Process $NAME monitoring check failed"
     fi
-    
-    echo "running"
 }
 
 # Основная логика
