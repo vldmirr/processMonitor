@@ -59,7 +59,7 @@ checkProcess() {
         fi
     fi
 
-    # читаем прошлый PID
+    #записываем прошлый PID
     if [ -f "$PID_FILE" ]; then
         prevPID=$(cat "$PID_FILE" 2>/dev/null)
     fi
@@ -68,9 +68,6 @@ checkProcess() {
     if [ -n "$prevPID" ] && [ "$currPID" != "$prevPID" ]; then  
         log "INFO: Process $NAME was restarted. Old PID: $prevPID, New PID: $currPID"
     fi
-
-    # Сохраняем текущий PID
-    echo "$currPID" > "$PID_FILE"
     
     # Отправляем запрос на сервер
     if sendReq; then
