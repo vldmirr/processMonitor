@@ -66,7 +66,7 @@ checkProcess() {
 
     #если процесс перезапущен
     if [ -n "$prevPID" ] && [ "$currPID" != "$prevPID" ]; then  
-        log "INFO: Process $NAME was restarted. Old PID: $prevPID, New PID: $currPID"
+        log "INFO: Process $NAME was restarted. New PID: $currPID"
     fi
 
     # Сохраняем текущий PID
